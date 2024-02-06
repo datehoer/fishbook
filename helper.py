@@ -16,7 +16,7 @@ def check_isbn(word):
     return isbn_or_key
 
 
-def get_search_result(url, proxies=None):
+def get_search_result_zlibrary(url, proxies=None):
     res = requests.get(url, proxies=proxies)
     html = etree.HTML(res.text)
     search_results = html.xpath('//div[@class="resItemBox resItemBoxBooks exactMatch"]')

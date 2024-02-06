@@ -1,20 +1,15 @@
-from flask import Flask, make_response
-from helper import check_isbn, get_search_result
+from flask import Flask
+from helper import check_isbn, get_search_result_zlibrary
 
 app = Flask(__name__)
 app.config.from_object('config')
-
-
-@app.route("/hello")
-def hello():
-    # status code 200, 404, 301
-    # status code is a mark, don't need to care?
-    headers = {
-        "content-type": "text/html"
-    }
-    response = make_response("<html><body><p>Hello, World!</p></body></html>", 200)
-    response.headers = headers
-    return response
+search_return_data = {
+    "data": [],
+    "success": "ok",
+    "msg": "",
+    "page": 1,
+    "has_next": False,
+}
 
 
 @app.route("/book/search/<q>/<page>")
@@ -29,23 +24,18 @@ def search(q, page):
         url = "https://1lib.sk/s/{}".format(q)
     else:
         url = "https://1lib.sk/s/{}".format(q)
-    data = get_search_result(url, app.config['PROXIES'])
+    data = get_search_result_zlibrary(url, app.config['PROXIES'])
     if len(data) == 0:
-        return {
-            "data": [],
-            "success": "no",
-            "msg": "no data",
-            "page": page,
-            "has_next": False,
-        }, 404
-    return_data = {
-        "data": data,
-        "success": "ok",
-        "msg": "success",
-        "page": page,
-        "has_next": False,
-    }
-    return return_data, 200
+        not_found_data = search_return_data.copy()
+        not_found_data['success'] = "no"
+        not_found_data['message'] = "no data"
+        not_found_data['page'] = page
+        return not_found_data, 404
+    ok_return_data = search_return_data.copy()
+    ok_return_data['data'] = data
+    ok_return_data['page'] = page
+    ok_return_data['message'] = "success"
+    return ok_return_data, 200
 
 
 @app.route("/")
